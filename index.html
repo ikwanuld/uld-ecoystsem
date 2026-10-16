@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Teleport KUL – ULD Tools</title>
+  <meta name="description" content="Quick links to all Teleport KUL ULD web apps.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1120">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ULD Tools">
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg-2: #111a2e;
+      --card: rgba(30, 41, 59, 0.72);
+      --card-hover: rgba(51, 65, 85, 0.85);
+      --border: rgba(148, 163, 184, 0.14);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #e11d48;     /* Teleport red */
+      --accent-2: #6366f1;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 50% -200px, rgba(225, 29, 72, 0.18), transparent 70%),
+        radial-gradient(800px 500px at 100% 100%, rgba(99, 102, 241, 0.12), transparent 70%),
+        var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: calc(env(safe-area-inset-top) + 2.5rem) 1rem calc(env(safe-area-inset-bottom) + 2rem);
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wrap { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 1.75rem; }
+
+    /* ---------- Header ---------- */
+    header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+    .logo {
+      width: 88px; height: 88px; border-radius: 24px;
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(225, 29, 72, 0.25), inset 0 1px 0 rgba(255,255,255,.06);
+      display: grid; place-items: center; overflow: hidden;
+    }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); font-size: .9rem; }
+    .pills { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+    .pill {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .75rem; font-weight: 600; color: var(--muted);
+      padding: .3rem .7rem; border-radius: 999px;
+      background: rgba(15, 23, 42, .6); border: 1px solid var(--border);
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .offline .dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+
+    /* ---------- Sections ---------- */
+    section { display: flex; flex-direction: column; gap: .7rem; }
+    .section-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
+      color: var(--muted); padding-left: .25rem;
+    }
+
+    /* ---------- Link cards ---------- */
+    .link {
+      display: flex; align-items: center; gap: .9rem;
+      padding: .9rem 1rem;
+      background: var(--card);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text); text-decoration: none;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+      position: relative;
+    }
+    .link:hover { background: var(--card-hover); border-color: rgba(148,163,184,.3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+    .link:active { transform: scale(.985); }
+    .link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+    .link.disabled { opacity: .5; pointer-events: none; }
+
+    .ico {
+      flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: color-mix(in srgb, var(--c) 18%, transparent);
+      color: var(--c);
+      border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+    }
+    .ico svg { width: 22px; height: 22px; }
+    .txt { flex: 1; min-width: 0; }
+    .name { font-weight: 650; font-size: .98rem; display: flex; align-items: center; gap: .45rem; }
+    .desc { color: var(--muted); font-size: .8rem; margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tag {
+      font-size: .62rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      padding: .12rem .4rem; border-radius: 6px;
+      background: rgba(245, 158, 11, .15); color: var(--warn);
+    }
+    .arrow { color: var(--muted); flex: 0 0 auto; transition: transform .18s ease, color .18s ease; }
+    .link:hover .arrow { transform: translate(2px, -2px); color: var(--text); }
+
+    /* ---------- Actions ---------- */
+    .actions { display: flex; gap: .6rem; }
+    .btn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .8rem 1rem; border-radius: 12px; font: inherit; font-weight: 600; font-size: .88rem;
+      cursor: pointer; border: 1px solid var(--border); color: var(--text); background: rgba(15,23,42,.6);
+      transition: background .18s ease, transform .18s ease;
+    }
+    .btn:hover { background: var(--card-hover); }
+    .btn:active { transform: scale(.98); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); }
+    .btn.primary:hover { background: #be123c; }
+    .btn svg { width: 18px; height: 18px; }
+    [hidden] { display: none !important; }
+
+    /* iOS install hint */
+    .hint {
+      font-size: .82rem; color: var(--muted); line-height: 1.5;
+      background: rgba(15,23,42,.6); border: 1px dashed var(--border); border-radius: 12px; padding: .8rem 1rem;
+    }
+    .hint b { color: var(--text); }
+
+    footer { text-align: center; color: #64748b; font-size: .75rem; line-height: 1.6; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+      transform: translate(-50%, 150%); transition: transform .25s ease;
+      background: #1e293b; border: 1px solid var(--border); color: var(--text);
+      padding: .65rem 1rem; border-radius: 10px; font-size: .85rem; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    }
+    .toast.show { transform: translate(-50%, 0); }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+
+    <header>
+      <div class="logo"><img src="icons/icon-192.png" alt="Teleport KUL" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'ULD',style:'font-weight:800;font-size:1.4rem;color:#e11d48'}))"></div>
+      <h1>Teleport KUL · ULD Tools</h1>
+      <p class="sub">All ULD web apps in one place</p>
+      <div class="pills">
+        <span class="pill" id="netPill"><span class="dot"></span><span id="netText">Online</span></span>
+        <span class="pill" id="countPill">— apps</span>
+      </div>
+    </header>
+
+    <!-- Link sections are rendered from the TOOLS list below -->
+    <div id="sections" style="display:flex;flex-direction:column;gap:1.5rem"></div>
+
+    <div class="actions">
+      <button class="btn primary" id="installBtn" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        Install App
+      </button>
+      <button class="btn" id="shareBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
+        Share
+      </button>
+    </div>
+
+    <p class="hint" id="iosHint" hidden>
+      To install on iPhone: tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.
+    </p>
+
+    <footer>
+      Teleport · KUL Station · ULD Operations<br>
+      Sign in with your <b>@airasia.com</b> account to open the apps
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* =====================================================
+       EDIT LINKS HERE — one object per tool.
+       section: group heading | color: icon tint
+       icon: key from ICONS below | tag: optional badge
+       ===================================================== */
+    const TOOLS = [
+      {
+        section: 'Daily Operations',
+        name: 'Waypoint',
+        desc: 'UCM Digital Form — record ULD movements',
+        url: 'https://script.google.com/a/macros/airasia.com/s/AKfycbza5Njluz2DjiNpdJyGGIpoJM244K7fvv9zohcwNZ4b0X_VuJXATVna4SH9SngKirMN/exec',
+        icon: 'route', color: '#6366f1'
+      },
+      {
+        section: 'Daily Operations',
+        name: 'ULD Sweep Mobile',
+        desc: 'SCM Record — check ULDs during sweeps',
+        url: 'https://script.google.com/a/macros/airasia.com/s/AKfycby6dpU2PnJvibeN1HkUGAIBGO5XiZJGtRatG3XBAi3A5FrWNyhH3NdZEQ4en2hx5bCg9w/exec',
+        icon: 'scan', color: '#14b8a6'
+      },
+      {
+        section: 'Daily Operations',
+        name: 'CPM',
+        desc: 'Cargo Presence Message parser',
+        url: '', // TODO: add the CPM web app URL
+        icon: 'doc', color: '#0ea5e9',
+        tag: 'Coming soon'
+      },
+      {
+        section: 'Reports',
+        name: 'Report Excessive Damage',
+        desc: 'EDR — report ULD damage',
+        url: 'https://script.google.com/a/macros/airasia.com/s/AKfycbwi9Y4-fJhbeQbpe8GLy5SGPVa26msLce-03H2nmbBFUXkQ_g9Sb5DOEhwNjYAZrizWpQ/exec',
+        icon: 'alert', color: '#e11d48'
+      }
+    ];
+
+    const ICONS = {
+      route: '<path d="M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M8 17h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"/>',
+      scan:  '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
+      doc:   '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/>',
+      alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+      box:   '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>'
+    };
+    const ARROW = '<svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
+
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function render() {
+      const groups = {};
+      TOOLS.forEach(t => (groups[t.section] ||= []).push(t));
+      document.getElementById('sections').innerHTML = Object.entries(groups).map(([title, items]) => `
+        <section>
+          <h2 class="section-title">${esc(title)}</h2>
+          ${items.map(t => `
+            <a class="link${t.url ? '' : ' disabled'}" ${t.url ? `href="${esc(t.url)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'} style="--c:${t.color}">
+              <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.box}</svg></span>
+              <span class="txt">
+                <span class="name">${esc(t.name)}${t.tag ? `<span class="tag">${esc(t.tag)}</span>` : ''}</span>
+                <span class="desc" style="display:block">${esc(t.desc)}</span>
+              </span>
+              ${t.url ? ARROW : ''}
+            </a>`).join('')}
+        </section>`).join('');
+      const live = TOOLS.filter(t => t.url).length;
+      document.getElementById('countPill').textContent = `${live} active apps`;
+    }
+    render();
+
+    /* ---------- Toast ---------- */
+    const toastEl = document.getElementById('toast');
+    let toastT;
+    function toast(msg) {
+      toastEl.textContent = msg; toastEl.classList.add('show');
+      clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2200);
+    }
+
+    /* ---------- Online / offline ---------- */
+    const pill = document.getElementById('netPill'), netText = document.getElementById('netText');
+    function updateNet() {
+      const on = navigator.onLine;
+      pill.classList.toggle('offline', !on);
+      netText.textContent = on ? 'Online' : 'Offline';
+    }
+    addEventListener('online', () => { updateNet(); toast('Back online'); });
+    addEventListener('offline', () => { updateNet(); toast('No connection — the apps need internet'); });
+    updateNet();
+
+    /* ---------- Install prompt ---------- */
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); deferredPrompt = e; installBtn.hidden = false;
+    });
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') toast('Installed!');
+      deferredPrompt = null; installBtn.hidden = true;
+    });
+    addEventListener('appinstalled', () => { installBtn.hidden = true; });
+
+    // iOS has no install prompt — show a hint instead
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS && !isStandalone) document.getElementById('iosHint').hidden = false;
+
+    /* ---------- Share ---------- */
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      const data = { title: 'Teleport KUL – ULD Tools', url: location.href };
+      try {
+        if (navigator.share) await navigator.share(data);
+        else { await navigator.clipboard.writeText(location.href); toast('Link copied'); }
+      } catch (_) { /* user cancelled */ }
+    });
+
+    /* ---------- Service worker ---------- */
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            nw && nw.addEventListener('statechange', () => {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) toast('New version available — reload');
+            });
+          });
+        }).catch(err => console.warn('SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
