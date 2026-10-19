@@ -1,4 +1,5 @@
 {
+  "id": "./",
   "name": "Teleport KUL – ULD Tools",
   "short_name": "ULD Tools",
   "description": "Quick links to all Teleport KUL ULD web apps.",
@@ -10,10 +11,29 @@
   "background_color": "#0b1120",
   "theme_color": "#0b1120",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
   ],
   "shortcuts": [
     {
@@ -25,8 +45,17 @@
       "url": "https://script.google.com/a/macros/airasia.com/s/AKfycby6dpU2PnJvibeN1HkUGAIBGO5XiZJGtRatG3XBAi3A5FrWNyhH3NdZEQ4en2hx5bCg9w/exec"
     },
     {
+      "name": "LUC Report",
+      "url": "https://script.google.com/a/macros/airasia.com/s/AKfycbwcUefNr38d8VYV4QeRB-neCNSP1JhKuFnCNPPD3iHDWx_AwWhMxAJuZotQpUg3gg-A/exec"
+    },
+    {
       "name": "Report Damage (EDR)",
       "url": "https://script.google.com/a/macros/airasia.com/s/AKfycbwi9Y4-fJhbeQbpe8GLy5SGPVa26msLce-03H2nmbBFUXkQ_g9Sb5DOEhwNjYAZrizWpQ/exec"
     }
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
   ]
 }
