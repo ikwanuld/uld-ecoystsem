@@ -8,7 +8,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0b1120">
+  <meta name="theme-color" content="#0b1120" id="themeColor">
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,310 +16,942 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ULD Tools">
 
+  <!-- Apply saved theme before first paint (no flash) -->
+  <script>
+    try { var t = localStorage.getItem('uld.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (_) {}
+  </script>
+
   <style>
+    /* ================= Theme tokens ================= */
     :root {
       --bg: #0b1120;
-      --bg-2: #111a2e;
+      --glow-1: rgba(225, 29, 72, 0.18);
+      --glow-2: rgba(99, 102, 241, 0.12);
       --card: rgba(30, 41, 59, 0.72);
       --card-hover: rgba(51, 65, 85, 0.85);
+      --surface: rgba(15, 23, 42, 0.6);
+      --sheet: #111a2e;
       --border: rgba(148, 163, 184, 0.14);
+      --border-strong: rgba(148, 163, 184, 0.3);
       --text: #f1f5f9;
       --muted: #94a3b8;
-      --accent: #e11d48;     /* Teleport red */
+      --faint: #64748b;
+      --accent: #e11d48;
+      --accent-hover: #be123c;
       --accent-2: #6366f1;
       --ok: #22c55e;
       --warn: #f59e0b;
+      --info: #38bdf8;
+      --shadow: 0 8px 24px rgba(0,0,0,.35);
       --radius: 16px;
+      color-scheme: dark;
     }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f4f6fb;
+        --glow-1: rgba(225, 29, 72, 0.10);
+        --glow-2: rgba(99, 102, 241, 0.08);
+        --card: rgba(255, 255, 255, 0.92);
+        --card-hover: #ffffff;
+        --surface: rgba(255, 255, 255, 0.8);
+        --sheet: #ffffff;
+        --border: rgba(15, 23, 42, 0.10);
+        --border-strong: rgba(15, 23, 42, 0.22);
+        --text: #0f172a;
+        --muted: #475569;
+        --faint: #64748b;
+        --accent-2: #4f46e5;
+        --ok: #16a34a;
+        --warn: #b45309;
+        --info: #0369a1;
+        --shadow: 0 8px 24px rgba(15,23,42,.10);
+        color-scheme: light;
+      }
+    }
+    :root[data-theme="light"] {
+      --bg: #f4f6fb;
+      --glow-1: rgba(225, 29, 72, 0.10);
+      --glow-2: rgba(99, 102, 241, 0.08);
+      --card: rgba(255, 255, 255, 0.92);
+      --card-hover: #ffffff;
+      --surface: rgba(255, 255, 255, 0.8);
+      --sheet: #ffffff;
+      --border: rgba(15, 23, 42, 0.10);
+      --border-strong: rgba(15, 23, 42, 0.22);
+      --text: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      --accent-2: #4f46e5;
+      --ok: #16a34a;
+      --warn: #b45309;
+      --info: #0369a1;
+      --shadow: 0 8px 24px rgba(15,23,42,.10);
+      color-scheme: light;
+    }
+
+    /* ================= Base ================= */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       background:
-        radial-gradient(1200px 600px at 50% -200px, rgba(225, 29, 72, 0.18), transparent 70%),
-        radial-gradient(800px 500px at 100% 100%, rgba(99, 102, 241, 0.12), transparent 70%),
+        radial-gradient(1200px 600px at 50% -200px, var(--glow-1), transparent 70%),
+        radial-gradient(800px 500px at 100% 100%, var(--glow-2), transparent 70%),
         var(--bg);
       background-attachment: fixed;
       color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: calc(env(safe-area-inset-top) + 2.5rem) 1rem calc(env(safe-area-inset-bottom) + 2rem);
+      padding: calc(env(safe-area-inset-top) + 1rem) 1rem calc(env(safe-area-inset-bottom) + 2rem);
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
-    .wrap { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 1.75rem; }
+    .wrap { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 1.5rem; }
+    [hidden] { display: none !important; }
+    button { font: inherit; color: inherit; }
+    svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
 
-    /* ---------- Header ---------- */
-    header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
-    .logo {
-      width: 88px; height: 88px; border-radius: 24px;
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 40px rgba(225, 29, 72, 0.25), inset 0 1px 0 rgba(255,255,255,.06);
-      display: grid; place-items: center; overflow: hidden;
+    /* ================= Top bar ================= */
+    .topbar { display: flex; justify-content: flex-end; gap: .5rem; }
+    .icon-btn {
+      width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: var(--surface); border: 1px solid var(--border); cursor: pointer;
+      transition: background .18s ease, transform .18s ease;
     }
-    .logo img { width: 100%; height: 100%; object-fit: cover; }
-    h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+    .icon-btn:hover { background: var(--card-hover); }
+    .icon-btn:active { transform: scale(.95); }
+    .icon-btn:focus-visible, .btn:focus-visible, .seg button:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+    /* ================= Header ================= */
+    header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .7rem; margin-top: -.5rem; }
+    .logo {
+      width: 84px; height: 84px; border-radius: 24px; overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 40px rgba(225, 29, 72, 0.25);
+    }
+    .logo img { width: 100%; height: 100%; display: block; }
+    h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
     .sub { color: var(--muted); font-size: .9rem; }
     .pills { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
     .pill {
       display: inline-flex; align-items: center; gap: .4rem;
       font-size: .75rem; font-weight: 600; color: var(--muted);
       padding: .3rem .7rem; border-radius: 999px;
-      background: rgba(15, 23, 42, .6); border: 1px solid var(--border);
+      background: var(--surface); border: 1px solid var(--border);
     }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
-    .offline .dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+    .pill.offline .dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
 
-    /* ---------- Sections ---------- */
-    section { display: flex; flex-direction: column; gap: .7rem; }
+    /* ================= Notice banner ================= */
+    .notice {
+      display: flex; align-items: flex-start; gap: .7rem;
+      padding: .8rem .8rem .8rem 1rem; border-radius: 14px;
+      background: color-mix(in srgb, var(--n) 12%, var(--surface));
+      border: 1px solid color-mix(in srgb, var(--n) 40%, transparent);
+      color: var(--text); font-size: .88rem; line-height: 1.45;
+    }
+    .notice > svg { color: var(--n); margin-top: .1rem; }
+    .notice p { flex: 1; }
+    .notice .icon-btn { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 0; color: var(--muted); margin: -.3rem -.2rem 0 0; }
+
+    /* ================= Search ================= */
+    .search { position: relative; }
+    .search svg { position: absolute; left: .95rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search input {
+      width: 100%; height: 50px; padding: 0 2.9rem 0 2.9rem;
+      border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font: inherit; font-size: 1rem; outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .search input::placeholder { color: var(--faint); }
+    .search input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-2) 25%, transparent); }
+    .search input::-webkit-search-cancel-button { display: none; }
+    .search .clear { position: absolute; right: .3rem; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: transparent; border: 0; }
+
+    /* ================= Sections ================= */
+    #tools { display: flex; flex-direction: column; gap: 1.4rem; }
+    section { display: flex; flex-direction: column; gap: .65rem; }
     .section-title {
+      display: flex; align-items: center; gap: .45rem;
       font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
       color: var(--muted); padding-left: .25rem;
     }
+    .section-title svg { width: 14px; height: 14px; }
+    .empty { text-align: center; color: var(--muted); font-size: .9rem; padding: 1.5rem 1rem; border: 1px dashed var(--border); border-radius: var(--radius); }
 
-    /* ---------- Link cards ---------- */
-    .link {
-      display: flex; align-items: center; gap: .9rem;
-      padding: .9rem 1rem;
+    /* ================= Tool cards (list view) ================= */
+    .cards { display: flex; flex-direction: column; gap: .65rem; }
+    .card {
+      position: relative; display: flex; align-items: center;
       background: var(--card);
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text); text-decoration: none;
+      border: 1px solid var(--border); border-radius: var(--radius);
       transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
-      position: relative;
     }
-    .link:hover { background: var(--card-hover); border-color: rgba(148,163,184,.3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
-    .link:active { transform: scale(.985); }
-    .link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
-    .link.disabled { opacity: .5; pointer-events: none; }
-
+    .card:hover { background: var(--card-hover); border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .card:has(.card-link:active) { transform: scale(.985); }
+    .card.disabled { opacity: .55; }
+    .card.disabled:hover { transform: none; box-shadow: none; }
+    .card-link {
+      flex: 1; min-width: 0; min-height: 72px;
+      display: flex; align-items: center; gap: .9rem;
+      padding: .85rem .25rem .85rem 1rem;
+      color: var(--text); text-decoration: none; border-radius: var(--radius);
+    }
+    .card-link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+    .card.disabled .card-link { cursor: default; }
     .ico {
-      flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px;
+      flex: 0 0 46px; width: 46px; height: 46px; border-radius: 13px;
       display: grid; place-items: center;
-      background: color-mix(in srgb, var(--c) 18%, transparent);
+      background: color-mix(in srgb, var(--c) 16%, transparent);
       color: var(--c);
       border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
     }
-    .ico svg { width: 22px; height: 22px; }
+    .ico svg { width: 23px; height: 23px; }
     .txt { flex: 1; min-width: 0; }
-    .name { font-weight: 650; font-size: .98rem; display: flex; align-items: center; gap: .45rem; }
-    .desc { color: var(--muted); font-size: .8rem; margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tag {
+    .name { font-weight: 650; font-size: 1rem; display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+    .desc { display: block; color: var(--muted); font-size: .82rem; margin-top: .18rem; line-height: 1.35; }
+    .badge {
       font-size: .62rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-      padding: .12rem .4rem; border-radius: 6px;
-      background: rgba(245, 158, 11, .15); color: var(--warn);
+      padding: .14rem .45rem; border-radius: 6px; white-space: nowrap;
+      background: color-mix(in srgb, var(--b) 16%, transparent); color: var(--b);
     }
-    .arrow { color: var(--muted); flex: 0 0 auto; transition: transform .18s ease, color .18s ease; }
-    .link:hover .arrow { transform: translate(2px, -2px); color: var(--text); }
+    .status-note { display: block; font-size: .76rem; color: var(--b); margin-top: .2rem; }
+    .pin {
+      flex: 0 0 48px; width: 48px; height: 48px; margin-right: .35rem;
+      display: grid; place-items: center; border-radius: 12px;
+      background: transparent; border: 0; cursor: pointer; color: var(--faint);
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .pin:hover { color: var(--text); background: var(--surface); }
+    .pin:active { transform: scale(.9); }
+    .pin.on { color: #f59e0b; }
+    .pin.on svg { fill: currentColor; }
+    .pin:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
 
-    /* ---------- Actions ---------- */
+    /* ================= Grid view ================= */
+    .grid .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+    .grid .card { align-items: stretch; }
+    .grid .card-link { flex-direction: column; align-items: flex-start; gap: .65rem; padding: 1rem; min-height: 132px; }
+    .grid .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .78rem; }
+    .grid .pin { position: absolute; top: .35rem; right: .1rem; width: 44px; height: 44px; }
+    .grid .name { font-size: .95rem; }
+
+    /* ================= Quick reference ================= */
+    .ref-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-left: .25rem; }
+    .ref-head .section-title { padding-left: 0; }
+    .offline-badge { --b: var(--ok); }
+    .tabs { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 0 0 auto; height: 40px; padding: 0 1rem; border-radius: 999px; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      font-size: .85rem; font-weight: 600; transition: background .18s ease, color .18s ease;
+    }
+    .tab[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .ref-panel { display: flex; flex-direction: column; gap: .5rem; }
+    .ref-row {
+      display: flex; align-items: center; gap: .85rem;
+      padding: .8rem 1rem; border-radius: 14px;
+      background: var(--card); border: 1px solid var(--border);
+    }
+    .code {
+      flex: 0 0 64px; width: 64px; text-align: center; white-space: nowrap;
+      font: 700 .8rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      padding: .45rem .5rem; border-radius: 9px;
+      background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
+    }
+    :root[data-theme="light"] .code { color: #be123c; }
+    .ref-main { flex: 1; min-width: 0; }
+    .ref-title { font-weight: 600; font-size: .92rem; }
+    .ref-meta { color: var(--muted); font-size: .8rem; margin-top: .15rem; line-height: 1.45; }
+    .ref-meta b { color: var(--text); font-weight: 600; white-space: nowrap; }
+    .ref-note { color: var(--faint); font-size: .75rem; padding: 0 .25rem; line-height: 1.5; }
+    .call {
+      flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); text-decoration: none;
+    }
+
+    /* ================= Actions / buttons ================= */
     .actions { display: flex; gap: .6rem; }
     .btn {
       flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-      padding: .8rem 1rem; border-radius: 12px; font: inherit; font-weight: 600; font-size: .88rem;
-      cursor: pointer; border: 1px solid var(--border); color: var(--text); background: rgba(15,23,42,.6);
+      min-height: 48px; padding: .75rem 1rem; border-radius: 12px; font-weight: 600; font-size: .9rem;
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface);
       transition: background .18s ease, transform .18s ease;
     }
     .btn:hover { background: var(--card-hover); }
     .btn:active { transform: scale(.98); }
-    .btn.primary { background: var(--accent); border-color: var(--accent); }
-    .btn.primary:hover { background: #be123c; }
-    .btn svg { width: 18px; height: 18px; }
-    [hidden] { display: none !important; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent-hover); }
 
-    /* iOS install hint */
     .hint {
       font-size: .82rem; color: var(--muted); line-height: 1.5;
-      background: rgba(15,23,42,.6); border: 1px dashed var(--border); border-radius: 12px; padding: .8rem 1rem;
+      background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; padding: .8rem 1rem;
     }
     .hint b { color: var(--text); }
 
-    footer { text-align: center; color: #64748b; font-size: .75rem; line-height: 1.6; }
+    footer { text-align: center; color: var(--faint); font-size: .75rem; line-height: 1.7; }
+    footer b { color: var(--muted); }
+    .linkish { background: none; border: 0; color: var(--accent-2); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-size: inherit; padding: .4rem .2rem; }
 
-    .toast {
-      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
-      transform: translate(-50%, 150%); transition: transform .25s ease;
-      background: #1e293b; border: 1px solid var(--border); color: var(--text);
-      padding: .65rem 1rem; border-radius: 10px; font-size: .85rem; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+    /* ================= Dialogs (bottom sheets) ================= */
+    dialog {
+      margin: auto auto 0; width: 100%; max-width: 460px; max-height: 90vh;
+      border: 1px solid var(--border); border-bottom: 0; border-radius: 22px 22px 0 0;
+      background: var(--sheet); color: var(--text);
+      padding: 1.25rem 1.25rem calc(env(safe-area-inset-bottom) + 1.25rem);
     }
-    .toast.show { transform: translate(-50%, 0); }
+    @media (min-width: 560px) { dialog { margin: auto; border-radius: 22px; border-bottom: 1px solid var(--border); } }
+    dialog::backdrop { background: rgba(2, 6, 23, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+    dialog[open] { animation: up .22s ease; }
+    @keyframes up { from { transform: translateY(24px); opacity: 0; } }
+    .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .sheet-head h2 { font-size: 1.1rem; }
+    .field { margin-bottom: 1.1rem; }
+    .field-label { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .45rem; }
+    .seg { display: flex; padding: 4px; gap: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+    .seg button {
+      flex: 1; min-height: 42px; border: 0; border-radius: 9px; background: transparent; cursor: pointer;
+      font-weight: 600; font-size: .86rem; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+    }
+    .seg button[aria-pressed="true"] { background: var(--card-hover); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .field-help { font-size: .76rem; color: var(--faint); margin-top: .4rem; line-height: 1.45; }
 
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    .qr-box { display: grid; place-items: center; gap: .9rem; text-align: center; padding: .25rem 0 .5rem; }
+    .qr-box canvas { width: 240px; height: 240px; background: #fff; padding: 14px; border-radius: 16px; image-rendering: pixelated; }
+    .qr-url { font-size: .78rem; color: var(--muted); word-break: break-all; max-width: 300px; }
+
+    /* ================= Toast ================= */
+    .toast {
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 1.25rem); z-index: 10;
+      transform: translate(-50%, 160%); transition: transform .25s ease, visibility 0s .25s; visibility: hidden;
+      background: var(--sheet); border: 1px solid var(--border); color: var(--text);
+      padding: .7rem 1rem; border-radius: 12px; font-size: .86rem; box-shadow: var(--shadow);
+      max-width: calc(100vw - 2rem); display: flex; align-items: center; gap: .8rem;
+    }
+    .toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform .25s ease; }
+    .toast button { background: none; border: 0; color: var(--accent-2); font-weight: 700; cursor: pointer; padding: .2rem; }
+
+    @media (prefers-reduced-motion: reduce) { *, dialog[open] { transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
   <main class="wrap">
 
+    <div class="topbar">
+      <button class="icon-btn" id="qrBtn" data-i18n-label="qrBtn"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></button>
+      <button class="icon-btn" id="setBtn" data-i18n-label="settings"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+    </div>
+
     <header>
-      <div class="logo"><img src="icons/icon-192.png" alt="Teleport KUL" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'ULD',style:'font-weight:800;font-size:1.4rem;color:#e11d48'}))"></div>
+      <div class="logo"><img src="icons/icon-192.png" alt="Teleport KUL ULD Tools" width="84" height="84"></div>
       <h1>Teleport KUL · ULD Tools</h1>
-      <p class="sub">All ULD web apps in one place</p>
+      <p class="sub" data-i18n="sub"></p>
       <div class="pills">
-        <span class="pill" id="netPill"><span class="dot"></span><span id="netText">Online</span></span>
-        <span class="pill" id="countPill">— apps</span>
+        <span class="pill" id="netPill"><span class="dot"></span><span id="netText"></span></span>
+        <span class="pill" id="countPill"></span>
       </div>
     </header>
 
-    <!-- Link sections are rendered from the TOOLS list below -->
-    <div id="sections" style="display:flex;flex-direction:column;gap:1.5rem"></div>
+    <div id="notice"></div>
+
+    <div class="search" role="search">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search" data-i18n-ph="search">
+      <button class="icon-btn clear" id="qClear" hidden data-i18n-label="clear"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+
+    <div id="tools"></div>
+
+    <section id="ref">
+      <div class="ref-head">
+        <h2 class="section-title"><svg class="i" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6.5A2.5 2.5 0 0 0 4 21.5v0A2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg><span data-i18n="ref"></span></h2>
+        <span class="badge offline-badge" data-i18n="worksOffline"></span>
+      </div>
+      <div class="tabs" role="tablist" id="refTabs"></div>
+      <div class="ref-panel" role="tabpanel" id="refPanel"></div>
+    </section>
 
     <div class="actions">
       <button class="btn primary" id="installBtn" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        Install App
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        <span data-i18n="install"></span>
       </button>
       <button class="btn" id="shareBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
-        Share
+        <svg class="i" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
+        <span data-i18n="share"></span>
       </button>
     </div>
 
-    <p class="hint" id="iosHint" hidden>
-      To install on iPhone: tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.
-    </p>
+    <p class="hint" id="iosHint" hidden data-i18n-html="iosHint"></p>
 
     <footer>
-      Teleport · KUL Station · ULD Operations<br>
-      Sign in with your <b>@airasia.com</b> account to open the apps
+      <span data-i18n="footer1"></span><br>
+      <span data-i18n-html="footer2"></span><br>
+      <span id="versionLine"></span> · <button class="linkish" id="updateBtn" data-i18n="checkUpdate"></button>
     </footer>
   </main>
 
-  <div class="toast" id="toast"></div>
+  <!-- Settings sheet -->
+  <dialog id="setDlg" aria-labelledby="setTitle">
+    <div class="sheet-head">
+      <h2 id="setTitle" data-i18n="settings"></h2>
+      <button class="icon-btn" data-close data-i18n-label="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="field">
+      <div class="field-label" data-i18n="language"></div>
+      <div class="seg" data-setting="lang">
+        <button data-v="en">English</button><button data-v="ms">Bahasa Melayu</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label" data-i18n="theme"></div>
+      <div class="seg" data-setting="theme">
+        <button data-v="auto" data-i18n="auto"></button><button data-v="light" data-i18n="light"></button><button data-v="dark" data-i18n="dark"></button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label" data-i18n="layout"></div>
+      <div class="seg" data-setting="layout">
+        <button data-v="list" data-i18n="list"></button><button data-v="grid" data-i18n="grid"></button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label" data-i18n="openIn"></div>
+      <div class="seg" data-setting="open">
+        <button data-v="app" data-i18n="inApp"></button><button data-v="tab" data-i18n="newTab"></button>
+      </div>
+      <p class="field-help" data-i18n="openHelp"></p>
+    </div>
+    <button class="btn" id="resetBtn" style="width:100%">
+      <svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      <span data-i18n="reset"></span>
+    </button>
+  </dialog>
 
+  <!-- QR sheet -->
+  <dialog id="qrDlg" aria-labelledby="qrTitle">
+    <div class="sheet-head">
+      <h2 id="qrTitle" data-i18n="qrTitle"></h2>
+      <button class="icon-btn" data-close data-i18n-label="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="qr-box">
+      <canvas id="qrCanvas" width="240" height="240" role="img" aria-label="QR code"></canvas>
+      <p class="sub" data-i18n="qrSub"></p>
+      <p class="qr-url" id="qrUrl"></p>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAct" hidden></button></div>
+
+  <script src="qrcode.min.js" defer></script>
   <script>
-    /* =====================================================
-       EDIT LINKS HERE — one object per tool.
-       section: group heading | color: icon tint
-       icon: key from ICONS below | tag: optional badge
-       ===================================================== */
+    /* =====================================================================
+       CONFIG — everything you normally edit lives in this block.
+       ===================================================================== */
+
+    // Bump this on every change. The service worker uses it as its cache
+    // name, so phones pick up the new version automatically.
+    const APP_VERSION = '2.0.1';
+    const LAST_UPDATED = '2026-10-19';
+
+    // Banner at the top. Set to null to hide.
+    // id: change it for each new notice (dismissals are remembered per id)
+    // type: 'info' | 'warn' | 'ok'   until: hidden after this date (optional)
+    const NOTICE = {
+      id: 'v2-launch',
+      type: 'info',
+      until: '2026-10-31',
+      en: 'New: search, pin your favourite tools, and offline quick reference.',
+      ms: 'Baharu: carian, pin app kegemaran anda, dan rujukan pantas luar talian.'
+    };
+
+    // Section headings (key → label per language)
+    const SECTIONS = {
+      ops:     { en: 'Daily Operations', ms: 'Operasi Harian' },
+      reports: { en: 'Reports',          ms: 'Laporan' }
+    };
+
+    // One object per tool.
+    // id: unique, never change it (pins & recents are saved by id)
+    // status (optional): 'soon' | 'maintenance' | 'updated' | 'new'
+    // statusNote (optional): short line under the description, per language
+    // keywords: extra words that should match in search
     const TOOLS = [
       {
-        section: 'Daily Operations',
-        name: 'Waypoint',
-        desc: 'UCM Digital Form — record ULD movements',
+        id: 'waypoint', section: 'ops', name: 'Waypoint',
+        desc: { en: 'UCM Digital Form — record ULD movements', ms: 'Borang Digital UCM — rekod pergerakan ULD' },
         url: 'https://script.google.com/a/macros/airasia.com/s/AKfycbza5Njluz2DjiNpdJyGGIpoJM244K7fvv9zohcwNZ4b0X_VuJXATVna4SH9SngKirMN/exec',
-        icon: 'route', color: '#6366f1'
+        icon: 'route', color: '#6366f1', keywords: 'ucm transfer movement form'
       },
       {
-        section: 'Daily Operations',
-        name: 'ULD Sweep Mobile',
-        desc: 'SCM Record — check ULDs during sweeps',
+        id: 'sweep', section: 'ops', name: 'ULD Sweep Mobile',
+        desc: { en: 'SCM Record — check ULDs during sweeps', ms: 'Rekod SCM — semak ULD semasa sweep' },
         url: 'https://script.google.com/a/macros/airasia.com/s/AKfycby6dpU2PnJvibeN1HkUGAIBGO5XiZJGtRatG3XBAi3A5FrWNyhH3NdZEQ4en2hx5bCg9w/exec',
-        icon: 'scan', color: '#14b8a6'
+        icon: 'scan', color: '#14b8a6', keywords: 'scm stock count sweep checker'
       },
       {
-        section: 'Daily Operations',
-        name: 'CPM',
-        desc: 'Container/Pallet Distribution Message',
-        url: '', // TODO: add the CPM web app URL
-        icon: 'doc', color: '#0ea5e9',
-        tag: 'Coming soon'
+        id: 'luc', section: 'ops', name: 'LUC Report',
+        desc: { en: 'Update LUC IN and OUT from party to party', ms: 'Kemas kini LUC IN dan OUT antara pihak' },
+        url: 'https://script.google.com/a/macros/airasia.com/s/AKfycbwcUefNr38d8VYV4QeRB-neCNSP1JhKuFnCNPPD3iHDWx_AwWhMxAJuZotQpUg3gg-A/exec',
+        icon: 'swap', color: '#a855f7', keywords: 'luc uld local transfer control in out handover party'
       },
       {
-        section: 'Reports',
-        name: 'Report Excessive Damage',
-        desc: 'EDR — report ULD damage',
+        id: 'cpm', section: 'ops', name: 'CPM',
+        desc: { en: 'Container/Pallet Distribution Message', ms: 'Mesej Agihan Kontena/Palet' },
+        url: '', // TODO: add the CPM web app URL, then remove status
+        icon: 'doc', color: '#0ea5e9', status: 'soon', keywords: 'cpm a330 d7 utilisation'
+      },
+      {
+        id: 'edr', section: 'reports', name: 'Report Excessive Damage',
+        desc: { en: 'EDR — report ULD damage', ms: 'EDR — lapor kerosakan ULD' },
         url: 'https://script.google.com/a/macros/airasia.com/s/AKfycbwi9Y4-fJhbeQbpe8GLy5SGPVa26msLce-03H2nmbBFUXkQ_g9Sb5DOEhwNjYAZrizWpQ/exec',
-        icon: 'alert', color: '#e11d48'
+        icon: 'alert', color: '#e11d48', keywords: 'edr damage broken repair'
       }
     ];
 
+    // Quick reference (cached for offline use). Empty lists are hidden.
+    const REFERENCE = {
+      // Standard IATA base sizes. Max gross shown only where it is the standard rating.
+      uld: [
+        { code: 'AKH',       name: { en: 'LD3-45 container', ms: 'Kontena LD3-45' },            base: '156 × 153 cm', height: '114 cm', mgw: '1,134 kg', on: 'AK · A321F' },
+        { code: 'AKE',       name: { en: 'LD3 container', ms: 'Kontena LD3' },                 base: '156 × 153 cm', height: '163 cm', mgw: '1,588 kg', on: 'D7 · A330' },
+        { code: 'PAG/PAJ',   name: { en: '88 × 125 in pallet', ms: 'Palet 88 × 125 in' },      base: '318 × 224 cm', mgw: '6,033 kg', on: 'AK · A321F, D7 · A330' },
+        { code: 'PMC',       name: { en: '96 × 125 in pallet', ms: 'Palet 96 × 125 in' },      base: '318 × 244 cm', mgw: '6,804 kg', on: 'D7 · A330' },
+        { code: 'AAY',       name: { en: 'Main deck container', ms: 'Kontena dek utama' },     base: '318 × 224 cm', on: 'AK · A321F' },
+        { code: 'PKC',       name: { en: 'LD3-size pallet', ms: 'Palet saiz LD3' },             base: '156 × 153 cm', on: 'AK · A321F' }
+      ],
+      fleet: [
+        { reg: '9M-TLA', type: 'A321F', op: 'AK' },
+        { reg: '9M-TLB', type: 'A321F', op: 'AK' },
+        { reg: '9M-TLP', type: 'A321F', op: 'AK' }
+      ],
+      // { code: 'PEN', name: 'Penang', note: 'AK · A321F' }
+      stations: [],
+      // { name: 'Duty Supervisor', role: 'ULD Control KUL', phone: '+60 3-0000 0000' }
+      contacts: [],
+      // { item: 'Base frame crack', limit: { en: '...', ms: '...' } }
+      damage: []
+    };
+
+    /* =====================================================================
+       TEXT — English and Bahasa Melayu
+       ===================================================================== */
+    const STR = {
+      en: {
+        sub: 'All ULD web apps in one place', online: 'Online', offline: 'Offline',
+        active: n => `${n} active apps`, search: 'Search tools…', clear: 'Clear search',
+        pinned: 'Pinned', recent: 'Recent', results: 'Results', noMatch: q => `No tools match “${q}”`,
+        pin: 'Pin to top', unpin: 'Unpin', pinnedToast: 'Pinned to top', unpinnedToast: 'Unpinned',
+        status: { soon: 'Coming soon', maintenance: 'Maintenance', updated: 'Updated', new: 'New' },
+        ref: 'Quick Reference', worksOffline: 'Works offline',
+        tabs: { uld: 'ULD Types', fleet: 'Fleet', stations: 'Stations', contacts: 'Contacts', damage: 'Damage Limits' },
+        base: 'Base', height: 'Height', maxGross: 'Max gross', usedOn: 'Used on',
+        uldNote: 'Standard IATA sizes. Always check the ULD placard for its actual limits.',
+        call: 'Call',
+        install: 'Install App', share: 'Share',
+        iosHint: 'To install on iPhone: tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.',
+        footer1: 'Teleport · KUL Station · ULD Operations',
+        footer2: 'Sign in with your <b>@airasia.com</b> account to open the apps',
+        version: (v, d) => `v${v} · Updated ${d}`, checkUpdate: 'Check for updates',
+        checking: 'Checking for updates…', upToDate: 'You have the latest version', newVersion: 'New version available', reload: 'Reload',
+        backOnline: 'Back online', noConn: 'No connection — the apps need internet',
+        installed: 'Installed!', linkCopied: 'Link copied',
+        settings: 'Settings', close: 'Close', language: 'Language', theme: 'Theme',
+        auto: 'Auto', light: 'Light', dark: 'Dark', layout: 'Layout', list: 'List', grid: 'Grid',
+        openIn: 'Open tools', inApp: 'In this app', newTab: 'New tab',
+        openHelp: '“In this app” opens tools in the same window — use Back or the ✕ bar to return here.',
+        reset: 'Clear pinned & recent', cleared: 'Pinned & recent cleared',
+        qrBtn: 'Show QR code', qrTitle: 'Scan to open ULD Tools', qrSub: 'Point a phone camera at this code',
+        dismiss: 'Dismiss'
+      },
+      ms: {
+        sub: 'Semua web app ULD di satu tempat', online: 'Dalam talian', offline: 'Luar talian',
+        active: n => `${n} app aktif`, search: 'Cari app…', clear: 'Kosongkan carian',
+        pinned: 'Dipin', recent: 'Terkini', results: 'Hasil carian', noMatch: q => `Tiada app sepadan dengan “${q}”`,
+        pin: 'Pin ke atas', unpin: 'Nyahpin', pinnedToast: 'Dipin ke atas', unpinnedToast: 'Pin dibuang',
+        status: { soon: 'Akan datang', maintenance: 'Penyelenggaraan', updated: 'Dikemas kini', new: 'Baharu' },
+        ref: 'Rujukan Pantas', worksOffline: 'Boleh luar talian',
+        tabs: { uld: 'Jenis ULD', fleet: 'Armada', stations: 'Stesen', contacts: 'Hubungi', damage: 'Had Kerosakan' },
+        base: 'Tapak', height: 'Tinggi', maxGross: 'Berat maks', usedOn: 'Digunakan pada',
+        uldNote: 'Saiz standard IATA. Sentiasa semak plakad ULD untuk had sebenar.',
+        call: 'Panggil',
+        install: 'Pasang App', share: 'Kongsi',
+        iosHint: 'Untuk pasang di iPhone: tekan <b>Share</b> di Safari, kemudian <b>Add to Home Screen</b>.',
+        footer1: 'Teleport · Stesen KUL · Operasi ULD',
+        footer2: 'Log masuk dengan akaun <b>@airasia.com</b> untuk buka app',
+        version: (v, d) => `v${v} · Dikemas kini ${d}`, checkUpdate: 'Semak kemas kini',
+        checking: 'Menyemak kemas kini…', upToDate: 'Anda guna versi terkini', newVersion: 'Versi baharu tersedia', reload: 'Muat semula',
+        backOnline: 'Kembali dalam talian', noConn: 'Tiada sambungan — app memerlukan internet',
+        installed: 'Dipasang!', linkCopied: 'Pautan disalin',
+        settings: 'Tetapan', close: 'Tutup', language: 'Bahasa', theme: 'Tema',
+        auto: 'Auto', light: 'Cerah', dark: 'Gelap', layout: 'Susun atur', list: 'Senarai', grid: 'Grid',
+        openIn: 'Buka app', inApp: 'Dalam app ini', newTab: 'Tab baharu',
+        openHelp: '“Dalam app ini” membuka app dalam tetingkap sama — guna Back atau bar ✕ untuk kembali.',
+        reset: 'Kosongkan pin & terkini', cleared: 'Pin & terkini dikosongkan',
+        qrBtn: 'Tunjuk kod QR', qrTitle: 'Imbas untuk buka ULD Tools', qrSub: 'Halakan kamera telefon pada kod ini',
+        dismiss: 'Tutup'
+      }
+    };
+
+    /* =====================================================================
+       ICONS (stroke paths, 24×24)
+       ===================================================================== */
     const ICONS = {
       route: '<path d="M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M8 17h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6"/>',
       scan:  '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
       doc:   '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/>',
       alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-      box:   '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>'
+      swap:  '<path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/>',
+      box:   '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
+      star:  '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9Z"/>',
+      clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+      info:  '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+      x:     '<path d="M18 6 6 18M6 6l12 12"/>',
+      phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>'
     };
-    const ARROW = '<svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
+    const svg = (k, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || ICONS.box}</svg>`;
+    const STATUS_COLOR = { soon: 'var(--warn)', maintenance: 'var(--warn)', updated: 'var(--ok)', new: 'var(--info)' };
+    const NOTICE_COLOR = { info: 'var(--info)', warn: 'var(--warn)', ok: 'var(--ok)' };
 
-    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    /* =====================================================================
+       STATE (saved per phone)
+       ===================================================================== */
+    const store = {
+      get(k, d) { try { const v = localStorage.getItem('uld.' + k); return v === null ? d : JSON.parse(v); } catch (_) { return d; } },
+      set(k, v) { try { localStorage.setItem('uld.' + k, JSON.stringify(v)); } catch (_) {} }
+    };
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const state = {
+      lang:   store.get('lang', 'en'),
+      theme:  (() => { try { return localStorage.getItem('uld.theme') || 'auto'; } catch (_) { return 'auto'; } })(),
+      layout: store.get('layout', 'list'),
+      open:   store.get('open', isStandalone ? 'app' : 'tab'),
+      pins:   store.get('pins', []),
+      recent: store.get('recent', []),   // [{id, t}]
+      dismissed: store.get('dismissed', []),
+      q: '',
+      tab: null
+    };
+    const T = () => STR[state.lang] || STR.en;
+    const L = v => (v && typeof v === 'object') ? (v[state.lang] || v.en) : (v || '');
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const $ = id => document.getElementById(id);
+    const byId = Object.fromEntries(TOOLS.map(t => [t.id, t]));
 
-    function render() {
-      const groups = {};
-      TOOLS.forEach(t => (groups[t.section] ||= []).push(t));
-      document.getElementById('sections').innerHTML = Object.entries(groups).map(([title, items]) => `
-        <section>
-          <h2 class="section-title">${esc(title)}</h2>
-          ${items.map(t => `
-            <a class="link${t.url ? '' : ' disabled'}" ${t.url ? `href="${esc(t.url)}" target="_blank" rel="noopener"` : 'aria-disabled="true"'} style="--c:${t.color}">
-              <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[t.icon] || ICONS.box}</svg></span>
-              <span class="txt">
-                <span class="name">${esc(t.name)}${t.tag ? `<span class="tag">${esc(t.tag)}</span>` : ''}</span>
-                <span class="desc" style="display:block">${esc(t.desc)}</span>
-              </span>
-              ${t.url ? ARROW : ''}
-            </a>`).join('')}
-        </section>`).join('');
-      const live = TOOLS.filter(t => t.url).length;
-      document.getElementById('countPill').textContent = `${live} active apps`;
+    /* =====================================================================
+       RENDER: static text
+       ===================================================================== */
+    function applyText() {
+      const s = T();
+      document.documentElement.lang = state.lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { const v = s[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+      document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = s[el.dataset.i18nHtml]; });
+      document.querySelectorAll('[data-i18n-label]').forEach(el => { const v = s[el.dataset.i18nLabel]; el.setAttribute('aria-label', v); el.title = v; });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = s[el.dataset.i18nPh]; });
+      $('countPill').textContent = s.active(TOOLS.filter(t => t.url).length);
+      const d = new Date(LAST_UPDATED + 'T00:00:00');
+      $('versionLine').textContent = s.version(APP_VERSION, d.toLocaleDateString(state.lang === 'ms' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }));
+      updateNet(false);
     }
-    render();
 
-    /* ---------- Toast ---------- */
-    const toastEl = document.getElementById('toast');
-    let toastT;
-    function toast(msg) {
-      toastEl.textContent = msg; toastEl.classList.add('show');
-      clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2200);
+    /* =====================================================================
+       RENDER: notice
+       ===================================================================== */
+    function renderNotice() {
+      const box = $('notice');
+      const n = NOTICE;
+      const expired = n && n.until && new Date() > new Date(n.until + 'T23:59:59');
+      if (!n || expired || state.dismissed.includes(n.id)) { box.innerHTML = ''; box.hidden = true; return; }
+      box.hidden = false;
+      box.innerHTML = `<div class="notice" style="--n:${NOTICE_COLOR[n.type] || NOTICE_COLOR.info}" role="note">
+          ${svg(n.type === 'warn' ? 'alert' : 'info')}
+          <p>${esc(L(n))}</p>
+          <button class="icon-btn" id="noticeX" aria-label="${esc(T().dismiss)}" title="${esc(T().dismiss)}">${svg('x')}</button>
+        </div>`;
+      $('noticeX').onclick = () => { state.dismissed.push(n.id); store.set('dismissed', state.dismissed); renderNotice(); };
     }
 
-    /* ---------- Online / offline ---------- */
-    const pill = document.getElementById('netPill'), netText = document.getElementById('netText');
-    function updateNet() {
-      const on = navigator.onLine;
-      pill.classList.toggle('offline', !on);
-      netText.textContent = on ? 'Online' : 'Offline';
+    /* =====================================================================
+       RENDER: tools
+       ===================================================================== */
+    function card(t) {
+      const s = T();
+      const live = !!t.url;
+      const pinned = state.pins.includes(t.id);
+      const badge = t.status ? `<span class="badge" style="--b:${STATUS_COLOR[t.status] || 'var(--muted)'}">${esc(s.status[t.status] || t.status)}</span>` : '';
+      const note = t.statusNote ? `<span class="status-note" style="--b:${STATUS_COLOR[t.status] || 'var(--muted)'}">${esc(L(t.statusNote))}</span>` : '';
+      const target = state.open === 'tab' ? ' target="_blank" rel="noopener"' : '';
+      const linkAttrs = live ? `href="${esc(t.url)}"${target} data-open="${esc(t.id)}"` : 'role="link" aria-disabled="true"';
+      return `<div class="card${live ? '' : ' disabled'}" style="--c:${t.color}">
+          <a class="card-link" ${linkAttrs}>
+            <span class="ico">${svg(t.icon)}</span>
+            <span class="txt">
+              <span class="name">${esc(t.name)}${badge}</span>
+              <span class="desc">${esc(L(t.desc))}</span>${note}
+            </span>
+          </a>
+          <button class="pin${pinned ? ' on' : ''}" data-pin="${esc(t.id)}" aria-pressed="${pinned}" aria-label="${esc((pinned ? s.unpin : s.pin) + ': ' + t.name)}" title="${esc(pinned ? s.unpin : s.pin)}">${svg('star')}</button>
+        </div>`;
     }
-    addEventListener('online', () => { updateNet(); toast('Back online'); });
-    addEventListener('offline', () => { updateNet(); toast('No connection — the apps need internet'); });
-    updateNet();
+    const group = (title, icon, items) => items.length ? `
+      <section>
+        <h2 class="section-title">${icon ? svg(icon) : ''}${esc(title)}</h2>
+        <div class="cards">${items.map(card).join('')}</div>
+      </section>` : '';
 
-    /* ---------- Install prompt ---------- */
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-    addEventListener('beforeinstallprompt', e => {
-      e.preventDefault(); deferredPrompt = e; installBtn.hidden = false;
+    function renderTools() {
+      const s = T();
+      const box = $('tools');
+      box.classList.toggle('grid', state.layout === 'grid');
+      const q = state.q.trim().toLowerCase();
+
+      if (q) {
+        const terms = q.split(/\s+/);
+        const hits = TOOLS.filter(t => {
+          const hay = [t.name, t.desc.en, t.desc.ms, SECTIONS[t.section]?.en, SECTIONS[t.section]?.ms, t.keywords].join(' ').toLowerCase();
+          return terms.every(w => hay.includes(w));
+        });
+        box.innerHTML = hits.length ? group(s.results, 'search', hits) : `<p class="empty">${esc(s.noMatch(state.q.trim()))}</p>`;
+        return;
+      }
+
+      const pinned = state.pins.map(id => byId[id]).filter(Boolean);
+      const recent = state.recent.map(r => byId[r.id]).filter(t => t && !state.pins.includes(t.id)).slice(0, 3);
+      let html = group(s.pinned, 'star', pinned) + group(s.recent, 'clock', recent);
+      const order = Object.keys(SECTIONS);
+      TOOLS.forEach(t => { if (!order.includes(t.section)) order.push(t.section); });
+      order.forEach(key => {
+        html += group(L(SECTIONS[key]) || key, null, TOOLS.filter(t => t.section === key));
+      });
+      box.innerHTML = html;
+    }
+
+    // Clicks: open (record recent) and pin
+    $('tools').addEventListener('click', e => {
+      const pinBtn = e.target.closest('[data-pin]');
+      if (pinBtn) {
+        const id = pinBtn.dataset.pin;
+        const on = state.pins.includes(id);
+        state.pins = on ? state.pins.filter(x => x !== id) : [...state.pins, id];
+        store.set('pins', state.pins);
+        renderTools();
+        toast(on ? T().unpinnedToast : T().pinnedToast);
+        return;
+      }
+      const link = e.target.closest('[data-open]');
+      if (link) {
+        const id = link.dataset.open;
+        state.recent = [{ id, t: Date.now() }, ...state.recent.filter(r => r.id !== id)].slice(0, 6);
+        store.set('recent', state.recent);
+        if (!navigator.onLine) { e.preventDefault(); toast(T().noConn); return; }
+        // Re-render after a new-tab open so "Recent" updates; same-window opens navigate away anyway.
+        if (link.target === '_blank') setTimeout(renderTools, 300);
+      }
     });
-    installBtn.addEventListener('click', async () => {
+
+    /* =====================================================================
+       RENDER: quick reference
+       ===================================================================== */
+    function refRows(key) {
+      const s = T();
+      const R = REFERENCE;
+      switch (key) {
+        case 'uld': return R.uld.map(u => {
+          const bits = [`${s.base} <b>${esc(u.base)}</b>`];
+          if (u.height) bits.push(`${s.height} <b>${esc(u.height)}</b>`);
+          if (u.mgw) bits.push(`${s.maxGross} <b>${esc(u.mgw)}</b>`);
+          return `<div class="ref-row"><span class="code">${esc(u.code)}</span><div class="ref-main">
+              <div class="ref-title">${esc(L(u.name))}</div>
+              <div class="ref-meta">${bits.join(' · ')}</div>
+              <div class="ref-meta">${s.usedOn} ${esc(u.on)}</div></div></div>`;
+        }).join('') + `<p class="ref-note">${esc(s.uldNote)}</p>`;
+        case 'fleet': return R.fleet.map(f => `<div class="ref-row"><span class="code">${esc(f.op)}</span><div class="ref-main">
+              <div class="ref-title">${esc(f.reg)}</div><div class="ref-meta">${esc(f.type)}</div></div></div>`).join('');
+        case 'stations': return R.stations.map(st => `<div class="ref-row"><span class="code">${esc(st.code)}</span><div class="ref-main">
+              <div class="ref-title">${esc(L(st.name))}</div>${st.note ? `<div class="ref-meta">${esc(L(st.note))}</div>` : ''}</div></div>`).join('');
+        case 'contacts': return R.contacts.map(c => `<div class="ref-row"><div class="ref-main">
+              <div class="ref-title">${esc(L(c.name))}</div><div class="ref-meta">${esc(L(c.role || ''))}${c.role ? ' · ' : ''}${esc(c.phone)}</div></div>
+              <a class="call" href="tel:${esc(String(c.phone).replace(/[^\d+]/g, ''))}" aria-label="${esc(s.call + ' ' + L(c.name))}">${svg('phone')}</a></div>`).join('');
+        case 'damage': return R.damage.map(d => `<div class="ref-row"><div class="ref-main">
+              <div class="ref-title">${esc(L(d.item))}</div><div class="ref-meta">${esc(L(d.limit))}</div></div></div>`).join('');
+      }
+      return '';
+    }
+    function renderRef() {
+      const keys = ['uld', 'fleet', 'stations', 'contacts', 'damage'].filter(k => (REFERENCE[k] || []).length);
+      $('ref').hidden = !keys.length;
+      if (!keys.length) return;
+      if (!keys.includes(state.tab)) state.tab = keys[0];
+      $('refTabs').innerHTML = keys.map(k =>
+        `<button class="tab" role="tab" id="tab-${k}" data-tab="${k}" aria-selected="${k === state.tab}" aria-controls="refPanel" tabindex="${k === state.tab ? 0 : -1}">${esc(T().tabs[k])}</button>`).join('');
+      $('refPanel').setAttribute('aria-labelledby', 'tab-' + state.tab);
+      $('refPanel').innerHTML = refRows(state.tab);
+    }
+    $('refTabs').addEventListener('click', e => {
+      const b = e.target.closest('[data-tab]');
+      if (b) { state.tab = b.dataset.tab; renderRef(); $('tab-' + state.tab).focus(); }
+    });
+    $('refTabs').addEventListener('keydown', e => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      const tabs = [...$('refTabs').querySelectorAll('[data-tab]')];
+      const i = tabs.findIndex(t => t.dataset.tab === state.tab);
+      const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+      state.tab = n.dataset.tab; renderRef(); $('tab-' + state.tab).focus();
+    });
+
+    /* =====================================================================
+       SEARCH
+       ===================================================================== */
+    const qEl = $('q');
+    qEl.addEventListener('input', () => { state.q = qEl.value; $('qClear').hidden = !state.q; renderTools(); });
+    qEl.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { qEl.value = ''; qEl.dispatchEvent(new Event('input')); }
+      if (e.key === 'Enter') { const first = $('tools').querySelector('[data-open]'); if (first) first.click(); }
+    });
+    $('qClear').onclick = () => { qEl.value = ''; qEl.dispatchEvent(new Event('input')); qEl.focus(); };
+    addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement !== qEl && !document.querySelector('dialog[open]')) { e.preventDefault(); qEl.focus(); }
+    });
+
+    /* =====================================================================
+       SETTINGS
+       ===================================================================== */
+    function applyTheme() {
+      const root = document.documentElement;
+      if (state.theme === 'auto') delete root.dataset.theme; else root.dataset.theme = state.theme;
+      try { localStorage.setItem('uld.theme', state.theme); } catch (_) {}
+      const light = state.theme === 'light' || (state.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
+      $('themeColor').content = light ? '#f4f6fb' : '#0b1120';
+    }
+    matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
+
+    function syncSeg() {
+      document.querySelectorAll('.seg').forEach(seg => {
+        const cur = state[seg.dataset.setting];
+        seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === cur));
+      });
+    }
+    document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+      const b = e.target.closest('button[data-v]'); if (!b) return;
+      const key = seg.dataset.setting;
+      state[key] = b.dataset.v;
+      if (key === 'theme') applyTheme(); else store.set(key, state[key]);
+      if (key === 'lang') { applyText(); renderNotice(); renderRef(); }
+      renderTools(); syncSeg();
+    }));
+    $('setBtn').onclick = () => { syncSeg(); $('setDlg').showModal(); };
+    $('resetBtn').onclick = () => {
+      state.pins = []; state.recent = []; store.set('pins', []); store.set('recent', []);
+      renderTools(); toast(T().cleared);
+    };
+
+    // Dialogs: close button + tap on backdrop
+    document.querySelectorAll('dialog').forEach(d => {
+      d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); });
+    });
+
+    /* =====================================================================
+       QR CODE
+       ===================================================================== */
+    function hubUrl() { const u = new URL('./', location.href); return u.href; }
+    $('qrBtn').onclick = () => {
+      const url = hubUrl();
+      $('qrUrl').textContent = url;
+      const c = $('qrCanvas'), ctx = c.getContext('2d');
+      if (typeof qrcode === 'function') {
+        const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+        const n = qr.getModuleCount(), size = 240, cell = size / n;
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#0b1120';
+        for (let r = 0; r < n; r++) for (let col = 0; col < n; col++)
+          if (qr.isDark(r, col)) ctx.fillRect(Math.floor(col * cell), Math.floor(r * cell), Math.ceil(cell), Math.ceil(cell));
+      }
+      $('qrDlg').showModal();
+    };
+
+    /* =====================================================================
+       TOAST
+       ===================================================================== */
+    let toastT;
+    function toast(msg, action, onAction, ms = 2400) {
+      $('toastMsg').textContent = msg;
+      const a = $('toastAct');
+      a.hidden = !action; a.textContent = action || ''; a.onclick = onAction || null;
+      $('toast').classList.add('show');
+      clearTimeout(toastT); toastT = setTimeout(() => $('toast').classList.remove('show'), action ? 8000 : ms);
+    }
+
+    /* =====================================================================
+       ONLINE / OFFLINE
+       ===================================================================== */
+    function updateNet(announce) {
+      const on = navigator.onLine;
+      $('netPill').classList.toggle('offline', !on);
+      $('netText').textContent = on ? T().online : T().offline;
+      if (announce) toast(on ? T().backOnline : T().noConn);
+    }
+    addEventListener('online', () => updateNet(true));
+    addEventListener('offline', () => updateNet(true));
+
+    /* =====================================================================
+       INSTALL / SHARE
+       ===================================================================== */
+    let deferredPrompt;
+    addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; $('installBtn').hidden = false; });
+    $('installBtn').onclick = async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') toast('Installed!');
-      deferredPrompt = null; installBtn.hidden = true;
-    });
-    addEventListener('appinstalled', () => { installBtn.hidden = true; });
+      if (outcome === 'accepted') toast(T().installed);
+      deferredPrompt = null; $('installBtn').hidden = true;
+    };
+    addEventListener('appinstalled', () => { $('installBtn').hidden = true; });
+    if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone) $('iosHint').hidden = false;
 
-    // iOS has no install prompt — show a hint instead
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    if (isIOS && !isStandalone) document.getElementById('iosHint').hidden = false;
-
-    /* ---------- Share ---------- */
-    document.getElementById('shareBtn').addEventListener('click', async () => {
-      const data = { title: 'Teleport KUL – ULD Tools', url: location.href };
+    $('shareBtn').onclick = async () => {
+      const url = hubUrl();
       try {
-        if (navigator.share) await navigator.share(data);
-        else { await navigator.clipboard.writeText(location.href); toast('Link copied'); }
-      } catch (_) { /* user cancelled */ }
-    });
+        if (navigator.share) await navigator.share({ title: 'Teleport KUL – ULD Tools', url });
+        else { await navigator.clipboard.writeText(url); toast(T().linkCopied); }
+      } catch (_) { /* cancelled */ }
+    };
 
-    /* ---------- Service worker ---------- */
+    /* =====================================================================
+       SERVICE WORKER + UPDATES
+       ===================================================================== */
+    // The page is network-first, so it is always fresh when online.
+    // Registering sw.js?v=<APP_VERSION> gives each version its own cache.
     if ('serviceWorker' in navigator) {
       addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-          reg.addEventListener('updatefound', () => {
-            const nw = reg.installing;
-            nw && nw.addEventListener('statechange', () => {
-              if (nw.state === 'installed' && navigator.serviceWorker.controller) toast('New version available — reload');
-            });
-          });
-        }).catch(err => console.warn('SW registration failed:', err));
+        navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(APP_VERSION))
+          .catch(err => console.warn('SW registration failed:', err));
       });
     }
+    async function checkForUpdate(silent) {
+      if (!navigator.onLine) { if (!silent) toast(T().noConn); return; }
+      if (!silent) toast(T().checking);
+      try {
+        const txt = await (await fetch('index.html', { cache: 'no-store' })).text();
+        const m = txt.match(/APP_VERSION = '([^']+)'/);
+        if (m && m[1] !== APP_VERSION) toast(`${T().newVersion} (v${m[1]})`, T().reload, () => location.reload());
+        else if (!silent) toast(T().upToDate);
+      } catch (_) { if (!silent) toast(T().noConn); }
+    }
+    $('updateBtn').onclick = () => checkForUpdate(false);
+    // Installed app left open in the background: check when it comes back.
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(true); });
+
+    /* =====================================================================
+       BOOT
+       ===================================================================== */
+    applyTheme();
+    applyText();
+    renderNotice();
+    renderTools();
+    renderRef();
   </script>
 </body>
 </html>
