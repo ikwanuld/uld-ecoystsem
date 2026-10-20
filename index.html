@@ -124,11 +124,7 @@
 
     /* ================= Header ================= */
     header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .7rem; margin-top: -.5rem; }
-    .logo {
-      width: 84px; height: 84px; border-radius: 24px; overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 40px rgba(225, 29, 72, 0.25);
-    }
+    .logo { width: 84px; height: 84px; filter: drop-shadow(0 10px 28px rgba(225, 29, 72, 0.28)); }
     .logo img { width: 100%; height: 100%; display: block; }
     h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
     .sub { color: var(--muted); font-size: .9rem; }
@@ -237,10 +233,7 @@
     .grid .pin { position: absolute; top: .35rem; right: .1rem; width: 44px; height: 44px; }
     .grid .name { font-size: .95rem; }
 
-    /* ================= Quick reference ================= */
-    .ref-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-left: .25rem; }
-    .ref-head .section-title { padding-left: 0; }
-    .offline-badge { --b: var(--ok); }
+    /* ================= Chip tabs (QR sheet) ================= */
     .tabs { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab {
@@ -249,29 +242,6 @@
       font-size: .85rem; font-weight: 600; transition: background .18s ease, color .18s ease;
     }
     .tab[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .ref-panel { display: flex; flex-direction: column; gap: .5rem; }
-    .ref-row {
-      display: flex; align-items: center; gap: .85rem;
-      padding: .8rem 1rem; border-radius: 14px;
-      background: var(--card); border: 1px solid var(--border);
-    }
-    .code {
-      flex: 0 0 64px; width: 64px; text-align: center; white-space: nowrap;
-      font: 700 .8rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      padding: .45rem .5rem; border-radius: 9px;
-      background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
-    }
-    :root[data-theme="light"] .code { color: #be123c; }
-    .ref-main { flex: 1; min-width: 0; }
-    .ref-title { font-weight: 600; font-size: .92rem; }
-    .ref-meta { color: var(--muted); font-size: .8rem; margin-top: .15rem; line-height: 1.45; }
-    .ref-meta b { color: var(--text); font-weight: 600; white-space: nowrap; }
-    .ref-note { color: var(--faint); font-size: .75rem; padding: 0 .25rem; line-height: 1.5; }
-    .call {
-      flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
-      background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); text-decoration: none;
-    }
-
     /* ================= Actions / buttons ================= */
     .actions { display: flex; gap: .6rem; }
     .btn {
@@ -320,6 +290,10 @@
 
     .qr-box { display: grid; place-items: center; gap: .9rem; text-align: center; padding: .25rem 0 .5rem; }
     .qr-box canvas { width: 240px; height: 240px; background: #fff; padding: 14px; border-radius: 16px; image-rendering: pixelated; }
+    .qr-tabs { margin-bottom: 1rem; }
+    .qr-tabs .tab { display: inline-flex; align-items: center; gap: .4rem; }
+    .qr-tabs .tab i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+    .qr-name { font-weight: 700; font-size: 1.05rem; }
     .qr-url { font-size: .78rem; color: var(--muted); word-break: break-all; max-width: 300px; }
 
     /* ================= Toast ================= */
@@ -345,7 +319,7 @@
     </div>
 
     <header>
-      <div class="logo"><img src="icons/icon-192.png" alt="Teleport KUL ULD Tools" width="84" height="84"></div>
+      <div class="logo"><img src="data:image/png;base64,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" alt="Teleport" width="84" height="84"></div>
       <h1>Teleport KUL · ULD Tools</h1>
       <p class="sub" data-i18n="sub"></p>
       <div class="pills">
@@ -363,15 +337,6 @@
     </div>
 
     <div id="tools"></div>
-
-    <section id="ref">
-      <div class="ref-head">
-        <h2 class="section-title"><svg class="i" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6.5A2.5 2.5 0 0 0 4 21.5v0A2.5 2.5 0 0 0 6.5 24"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg><span data-i18n="ref"></span></h2>
-        <span class="badge offline-badge" data-i18n="worksOffline"></span>
-      </div>
-      <div class="tabs" role="tablist" id="refTabs"></div>
-      <div class="ref-panel" role="tabpanel" id="refPanel"></div>
-    </section>
 
     <div class="actions">
       <button class="btn primary" id="installBtn" hidden>
@@ -433,13 +398,16 @@
   <!-- QR sheet -->
   <dialog id="qrDlg" aria-labelledby="qrTitle">
     <div class="sheet-head">
-      <h2 id="qrTitle" data-i18n="qrTitle"></h2>
+      <h2 id="qrTitle" data-i18n="qrHead"></h2>
       <button class="icon-btn" data-close data-i18n-label="close"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
+    <div class="tabs qr-tabs" role="tablist" id="qrTabs"></div>
     <div class="qr-box">
-      <canvas id="qrCanvas" width="240" height="240" role="img" aria-label="QR code"></canvas>
-      <p class="sub" data-i18n="qrSub"></p>
+      <p class="qr-name" id="qrName"></p>
+      <canvas id="qrCanvas" width="480" height="480" role="img" aria-label="QR code"></canvas>
+      <p class="sub" id="qrSub"></p>
       <p class="qr-url" id="qrUrl"></p>
+      <button class="btn" id="qrCopy" style="width:100%"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span data-i18n="copyLink"></span></button>
     </div>
   </dialog>
 
@@ -453,8 +421,8 @@
 
     // Bump this on every change. The service worker uses it as its cache
     // name, so phones pick up the new version automatically.
-    const APP_VERSION = '2.0.1';
-    const LAST_UPDATED = '2026-10-19';
+    const APP_VERSION = '2.1.2';
+    const LAST_UPDATED = '2026-10-20';
 
     // Banner at the top. Set to null to hide.
     // id: change it for each new notice (dismissals are remembered per id)
@@ -463,8 +431,8 @@
       id: 'v2-launch',
       type: 'info',
       until: '2026-10-31',
-      en: 'New: search, pin your favourite tools, and offline quick reference.',
-      ms: 'Baharu: carian, pin app kegemaran anda, dan rujukan pantas luar talian.'
+      en: 'New: search, pin your favourite tools, and a QR code for every app.',
+      ms: 'Baharu: carian, pin app kegemaran anda, dan kod QR untuk setiap app.'
     };
 
     // Section headings (key → label per language)
@@ -511,30 +479,6 @@
       }
     ];
 
-    // Quick reference (cached for offline use). Empty lists are hidden.
-    const REFERENCE = {
-      // Standard IATA base sizes. Max gross shown only where it is the standard rating.
-      uld: [
-        { code: 'AKH',       name: { en: 'LD3-45 container', ms: 'Kontena LD3-45' },            base: '156 × 153 cm', height: '114 cm', mgw: '1,134 kg', on: 'AK · A321F' },
-        { code: 'AKE',       name: { en: 'LD3 container', ms: 'Kontena LD3' },                 base: '156 × 153 cm', height: '163 cm', mgw: '1,588 kg', on: 'D7 · A330' },
-        { code: 'PAG/PAJ',   name: { en: '88 × 125 in pallet', ms: 'Palet 88 × 125 in' },      base: '318 × 224 cm', mgw: '6,033 kg', on: 'AK · A321F, D7 · A330' },
-        { code: 'PMC',       name: { en: '96 × 125 in pallet', ms: 'Palet 96 × 125 in' },      base: '318 × 244 cm', mgw: '6,804 kg', on: 'D7 · A330' },
-        { code: 'AAY',       name: { en: 'Main deck container', ms: 'Kontena dek utama' },     base: '318 × 224 cm', on: 'AK · A321F' },
-        { code: 'PKC',       name: { en: 'LD3-size pallet', ms: 'Palet saiz LD3' },             base: '156 × 153 cm', on: 'AK · A321F' }
-      ],
-      fleet: [
-        { reg: '9M-TLA', type: 'A321F', op: 'AK' },
-        { reg: '9M-TLB', type: 'A321F', op: 'AK' },
-        { reg: '9M-TLP', type: 'A321F', op: 'AK' }
-      ],
-      // { code: 'PEN', name: 'Penang', note: 'AK · A321F' }
-      stations: [],
-      // { name: 'Duty Supervisor', role: 'ULD Control KUL', phone: '+60 3-0000 0000' }
-      contacts: [],
-      // { item: 'Base frame crack', limit: { en: '...', ms: '...' } }
-      damage: []
-    };
-
     /* =====================================================================
        TEXT — English and Bahasa Melayu
        ===================================================================== */
@@ -545,11 +489,6 @@
         pinned: 'Pinned', recent: 'Recent', results: 'Results', noMatch: q => `No tools match “${q}”`,
         pin: 'Pin to top', unpin: 'Unpin', pinnedToast: 'Pinned to top', unpinnedToast: 'Unpinned',
         status: { soon: 'Coming soon', maintenance: 'Maintenance', updated: 'Updated', new: 'New' },
-        ref: 'Quick Reference', worksOffline: 'Works offline',
-        tabs: { uld: 'ULD Types', fleet: 'Fleet', stations: 'Stations', contacts: 'Contacts', damage: 'Damage Limits' },
-        base: 'Base', height: 'Height', maxGross: 'Max gross', usedOn: 'Used on',
-        uldNote: 'Standard IATA sizes. Always check the ULD placard for its actual limits.',
-        call: 'Call',
         install: 'Install App', share: 'Share',
         iosHint: 'To install on iPhone: tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.',
         footer1: 'Teleport · KUL Station · ULD Operations',
@@ -563,7 +502,8 @@
         openIn: 'Open tools', inApp: 'In this app', newTab: 'New tab',
         openHelp: '“In this app” opens tools in the same window — use Back or the ✕ bar to return here.',
         reset: 'Clear pinned & recent', cleared: 'Pinned & recent cleared',
-        qrBtn: 'Show QR code', qrTitle: 'Scan to open ULD Tools', qrSub: 'Point a phone camera at this code',
+        qrBtn: 'Show QR code', qrHead: 'QR codes', qrHub: 'ULD Tools hub', qrSub: 'Point a phone camera at this code',
+        qrSubTool: 'Scan, then sign in with an @airasia.com account', copyLink: 'Copy link',
         dismiss: 'Dismiss'
       },
       ms: {
@@ -572,11 +512,6 @@
         pinned: 'Dipin', recent: 'Terkini', results: 'Hasil carian', noMatch: q => `Tiada app sepadan dengan “${q}”`,
         pin: 'Pin ke atas', unpin: 'Nyahpin', pinnedToast: 'Dipin ke atas', unpinnedToast: 'Pin dibuang',
         status: { soon: 'Akan datang', maintenance: 'Penyelenggaraan', updated: 'Dikemas kini', new: 'Baharu' },
-        ref: 'Rujukan Pantas', worksOffline: 'Boleh luar talian',
-        tabs: { uld: 'Jenis ULD', fleet: 'Armada', stations: 'Stesen', contacts: 'Hubungi', damage: 'Had Kerosakan' },
-        base: 'Tapak', height: 'Tinggi', maxGross: 'Berat maks', usedOn: 'Digunakan pada',
-        uldNote: 'Saiz standard IATA. Sentiasa semak plakad ULD untuk had sebenar.',
-        call: 'Panggil',
         install: 'Pasang App', share: 'Kongsi',
         iosHint: 'Untuk pasang di iPhone: tekan <b>Share</b> di Safari, kemudian <b>Add to Home Screen</b>.',
         footer1: 'Teleport · Stesen KUL · Operasi ULD',
@@ -590,7 +525,8 @@
         openIn: 'Buka app', inApp: 'Dalam app ini', newTab: 'Tab baharu',
         openHelp: '“Dalam app ini” membuka app dalam tetingkap sama — guna Back atau bar ✕ untuk kembali.',
         reset: 'Kosongkan pin & terkini', cleared: 'Pin & terkini dikosongkan',
-        qrBtn: 'Tunjuk kod QR', qrTitle: 'Imbas untuk buka ULD Tools', qrSub: 'Halakan kamera telefon pada kod ini',
+        qrBtn: 'Tunjuk kod QR', qrHead: 'Kod QR', qrHub: 'Hab ULD Tools', qrSub: 'Halakan kamera telefon pada kod ini',
+        qrSubTool: 'Imbas, kemudian log masuk dengan akaun @airasia.com', copyLink: 'Salin pautan',
         dismiss: 'Tutup'
       }
     };
@@ -632,8 +568,7 @@
       pins:   store.get('pins', []),
       recent: store.get('recent', []),   // [{id, t}]
       dismissed: store.get('dismissed', []),
-      q: '',
-      tab: null
+      q: ''
     };
     const T = () => STR[state.lang] || STR.en;
     const L = v => (v && typeof v === 'object') ? (v[state.lang] || v.en) : (v || '');
@@ -753,56 +688,6 @@
     });
 
     /* =====================================================================
-       RENDER: quick reference
-       ===================================================================== */
-    function refRows(key) {
-      const s = T();
-      const R = REFERENCE;
-      switch (key) {
-        case 'uld': return R.uld.map(u => {
-          const bits = [`${s.base} <b>${esc(u.base)}</b>`];
-          if (u.height) bits.push(`${s.height} <b>${esc(u.height)}</b>`);
-          if (u.mgw) bits.push(`${s.maxGross} <b>${esc(u.mgw)}</b>`);
-          return `<div class="ref-row"><span class="code">${esc(u.code)}</span><div class="ref-main">
-              <div class="ref-title">${esc(L(u.name))}</div>
-              <div class="ref-meta">${bits.join(' · ')}</div>
-              <div class="ref-meta">${s.usedOn} ${esc(u.on)}</div></div></div>`;
-        }).join('') + `<p class="ref-note">${esc(s.uldNote)}</p>`;
-        case 'fleet': return R.fleet.map(f => `<div class="ref-row"><span class="code">${esc(f.op)}</span><div class="ref-main">
-              <div class="ref-title">${esc(f.reg)}</div><div class="ref-meta">${esc(f.type)}</div></div></div>`).join('');
-        case 'stations': return R.stations.map(st => `<div class="ref-row"><span class="code">${esc(st.code)}</span><div class="ref-main">
-              <div class="ref-title">${esc(L(st.name))}</div>${st.note ? `<div class="ref-meta">${esc(L(st.note))}</div>` : ''}</div></div>`).join('');
-        case 'contacts': return R.contacts.map(c => `<div class="ref-row"><div class="ref-main">
-              <div class="ref-title">${esc(L(c.name))}</div><div class="ref-meta">${esc(L(c.role || ''))}${c.role ? ' · ' : ''}${esc(c.phone)}</div></div>
-              <a class="call" href="tel:${esc(String(c.phone).replace(/[^\d+]/g, ''))}" aria-label="${esc(s.call + ' ' + L(c.name))}">${svg('phone')}</a></div>`).join('');
-        case 'damage': return R.damage.map(d => `<div class="ref-row"><div class="ref-main">
-              <div class="ref-title">${esc(L(d.item))}</div><div class="ref-meta">${esc(L(d.limit))}</div></div></div>`).join('');
-      }
-      return '';
-    }
-    function renderRef() {
-      const keys = ['uld', 'fleet', 'stations', 'contacts', 'damage'].filter(k => (REFERENCE[k] || []).length);
-      $('ref').hidden = !keys.length;
-      if (!keys.length) return;
-      if (!keys.includes(state.tab)) state.tab = keys[0];
-      $('refTabs').innerHTML = keys.map(k =>
-        `<button class="tab" role="tab" id="tab-${k}" data-tab="${k}" aria-selected="${k === state.tab}" aria-controls="refPanel" tabindex="${k === state.tab ? 0 : -1}">${esc(T().tabs[k])}</button>`).join('');
-      $('refPanel').setAttribute('aria-labelledby', 'tab-' + state.tab);
-      $('refPanel').innerHTML = refRows(state.tab);
-    }
-    $('refTabs').addEventListener('click', e => {
-      const b = e.target.closest('[data-tab]');
-      if (b) { state.tab = b.dataset.tab; renderRef(); $('tab-' + state.tab).focus(); }
-    });
-    $('refTabs').addEventListener('keydown', e => {
-      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-      const tabs = [...$('refTabs').querySelectorAll('[data-tab]')];
-      const i = tabs.findIndex(t => t.dataset.tab === state.tab);
-      const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
-      state.tab = n.dataset.tab; renderRef(); $('tab-' + state.tab).focus();
-    });
-
-    /* =====================================================================
        SEARCH
        ===================================================================== */
     const qEl = $('q');
@@ -839,7 +724,7 @@
       const key = seg.dataset.setting;
       state[key] = b.dataset.v;
       if (key === 'theme') applyTheme(); else store.set(key, state[key]);
-      if (key === 'lang') { applyText(); renderNotice(); renderRef(); }
+      if (key === 'lang') { applyText(); renderNotice(); }
       renderTools(); syncSeg();
     }));
     $('setBtn').onclick = () => { syncSeg(); $('setDlg').showModal(); };
@@ -857,20 +742,47 @@
        QR CODE
        ===================================================================== */
     function hubUrl() { const u = new URL('./', location.href); return u.href; }
-    $('qrBtn').onclick = () => {
-      const url = hubUrl();
-      $('qrUrl').textContent = url;
-      const c = $('qrCanvas'), ctx = c.getContext('2d');
-      if (typeof qrcode === 'function') {
-        const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-        const n = qr.getModuleCount(), size = 240, cell = size / n;
-        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
-        ctx.fillStyle = '#0b1120';
-        for (let r = 0; r < n; r++) for (let col = 0; col < n; col++)
-          if (qr.isDark(r, col)) ctx.fillRect(Math.floor(col * cell), Math.floor(r * cell), Math.ceil(cell), Math.ceil(cell));
-      }
-      $('qrDlg').showModal();
+
+    // One QR per destination: the hub itself + every tool that has a URL.
+    let qrSel = 'hub';
+    function qrTargets() {
+      return [{ id: 'hub', name: T().qrHub, url: hubUrl(), color: 'var(--accent)' },
+              ...TOOLS.filter(t => t.url).map(t => ({ id: t.id, name: t.name, url: t.url, color: t.color }))];
+    }
+    function drawQR(url) {
+      const c = $('qrCanvas'), ctx = c.getContext('2d'), size = c.width;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+      if (typeof qrcode !== 'function') return;
+      // Long Apps Script URLs → low error correction keeps the code less dense and easier to scan.
+      const qr = qrcode(0, url.length > 120 ? 'L' : 'M'); qr.addData(url); qr.make();
+      const n = qr.getModuleCount(), cell = size / n;
+      ctx.fillStyle = '#0b1120';
+      for (let r = 0; r < n; r++) for (let col = 0; col < n; col++)
+        if (qr.isDark(r, col)) ctx.fillRect(Math.floor(col * cell), Math.floor(r * cell), Math.ceil(cell), Math.ceil(cell));
+    }
+    function renderQR() {
+      const list = qrTargets();
+      if (!list.some(x => x.id === qrSel)) qrSel = 'hub';
+      const cur = list.find(x => x.id === qrSel);
+      $('qrTabs').innerHTML = list.map(x =>
+        `<button class="tab" role="tab" data-qr="${esc(x.id)}" aria-selected="${x.id === qrSel}" style="--c:${x.color}"><i></i>${esc(x.name)}</button>`).join('');
+      $('qrName').textContent = cur.name;
+      $('qrSub').textContent = cur.id === 'hub' ? T().qrSub : T().qrSubTool;
+      $('qrUrl').textContent = cur.url;
+      $('qrCanvas').setAttribute('aria-label', 'QR code: ' + cur.name);
+      drawQR(cur.url);
+    }
+    $('qrTabs').addEventListener('click', e => {
+      const b = e.target.closest('[data-qr]'); if (!b) return;
+      qrSel = b.dataset.qr; renderQR();
+      b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    });
+    $('qrCopy').onclick = async () => {
+      const cur = qrTargets().find(x => x.id === qrSel);
+      try { await navigator.clipboard.writeText(cur.url); toast(T().linkCopied); } catch (_) {}
     };
+    function openQR(id) { qrSel = id || 'hub'; renderQR(); $('qrDlg').showModal(); }
+    $('qrBtn').onclick = () => openQR('hub');
 
     /* =====================================================================
        TOAST
@@ -951,7 +863,6 @@
     applyText();
     renderNotice();
     renderTools();
-    renderRef();
   </script>
 </body>
 </html>
