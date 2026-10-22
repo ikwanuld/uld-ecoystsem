@@ -421,8 +421,8 @@
 
     // Bump this on every change. The service worker uses it as its cache
     // name, so phones pick up the new version automatically.
-    const APP_VERSION = '2.1.2';
-    const LAST_UPDATED = '2026-10-20';
+    const APP_VERSION = '2.1.3';
+    const LAST_UPDATED = '2026-10-22';
 
     // Banner at the top. Set to null to hide.
     // id: change it for each new notice (dismissals are remembered per id)
@@ -442,7 +442,7 @@
     };
 
     // One object per tool.
-    // id: unique, never change it (pins & recents are saved by id)
+    // id: unique, never change it (pins are saved by id)
     // status (optional): 'soon' | 'maintenance' | 'updated' | 'new'
     // statusNote (optional): short line under the description, per language
     // keywords: extra words that should match in search
@@ -486,7 +486,7 @@
       en: {
         sub: 'All ULD web apps in one place', online: 'Online', offline: 'Offline',
         active: n => `${n} active apps`, search: 'Search tools…', clear: 'Clear search',
-        pinned: 'Pinned', recent: 'Recent', results: 'Results', noMatch: q => `No tools match “${q}”`,
+        pinned: 'Pinned', results: 'Results', noMatch: q => `No tools match “${q}”`,
         pin: 'Pin to top', unpin: 'Unpin', pinnedToast: 'Pinned to top', unpinnedToast: 'Unpinned',
         status: { soon: 'Coming soon', maintenance: 'Maintenance', updated: 'Updated', new: 'New' },
         install: 'Install App', share: 'Share',
@@ -501,7 +501,7 @@
         auto: 'Auto', light: 'Light', dark: 'Dark', layout: 'Layout', list: 'List', grid: 'Grid',
         openIn: 'Open tools', inApp: 'In this app', newTab: 'New tab',
         openHelp: '“In this app” opens tools in the same window — use Back or the ✕ bar to return here.',
-        reset: 'Clear pinned & recent', cleared: 'Pinned & recent cleared',
+        reset: 'Clear pinned tools', cleared: 'Pinned tools cleared',
         qrBtn: 'Show QR code', qrHead: 'QR codes', qrHub: 'ULD Tools hub', qrSub: 'Point a phone camera at this code',
         qrSubTool: 'Scan, then sign in with an @airasia.com account', copyLink: 'Copy link',
         dismiss: 'Dismiss'
@@ -509,7 +509,7 @@
       ms: {
         sub: 'Semua web app ULD di satu tempat', online: 'Dalam talian', offline: 'Luar talian',
         active: n => `${n} app aktif`, search: 'Cari app…', clear: 'Kosongkan carian',
-        pinned: 'Dipin', recent: 'Terkini', results: 'Hasil carian', noMatch: q => `Tiada app sepadan dengan “${q}”`,
+        pinned: 'Dipin', results: 'Hasil carian', noMatch: q => `Tiada app sepadan dengan “${q}”`,
         pin: 'Pin ke atas', unpin: 'Nyahpin', pinnedToast: 'Dipin ke atas', unpinnedToast: 'Pin dibuang',
         status: { soon: 'Akan datang', maintenance: 'Penyelenggaraan', updated: 'Dikemas kini', new: 'Baharu' },
         install: 'Pasang App', share: 'Kongsi',
@@ -524,7 +524,7 @@
         auto: 'Auto', light: 'Cerah', dark: 'Gelap', layout: 'Susun atur', list: 'Senarai', grid: 'Grid',
         openIn: 'Buka app', inApp: 'Dalam app ini', newTab: 'Tab baharu',
         openHelp: '“Dalam app ini” membuka app dalam tetingkap sama — guna Back atau bar ✕ untuk kembali.',
-        reset: 'Kosongkan pin & terkini', cleared: 'Pin & terkini dikosongkan',
+        reset: 'Kosongkan app dipin', cleared: 'App dipin dikosongkan',
         qrBtn: 'Tunjuk kod QR', qrHead: 'Kod QR', qrHub: 'Hab ULD Tools', qrSub: 'Halakan kamera telefon pada kod ini',
         qrSubTool: 'Imbas, kemudian log masuk dengan akaun @airasia.com', copyLink: 'Salin pautan',
         dismiss: 'Tutup'
@@ -566,10 +566,10 @@
       layout: store.get('layout', 'list'),
       open:   store.get('open', isStandalone ? 'app' : 'tab'),
       pins:   store.get('pins', []),
-      recent: store.get('recent', []),   // [{id, t}]
       dismissed: store.get('dismissed', []),
       q: ''
     };
+    try { localStorage.removeItem('uld.recent'); } catch (_) {}
     const T = () => STR[state.lang] || STR.en;
     const L = v => (v && typeof v === 'object') ? (v[state.lang] || v.en) : (v || '');
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -654,8 +654,7 @@
       }
 
       const pinned = state.pins.map(id => byId[id]).filter(Boolean);
-      const recent = state.recent.map(r => byId[r.id]).filter(t => t && !state.pins.includes(t.id)).slice(0, 3);
-      let html = group(s.pinned, 'star', pinned) + group(s.recent, 'clock', recent);
+      let html = group(s.pinned, 'star', pinned);
       const order = Object.keys(SECTIONS);
       TOOLS.forEach(t => { if (!order.includes(t.section)) order.push(t.section); });
       order.forEach(key => {
@@ -664,7 +663,7 @@
       box.innerHTML = html;
     }
 
-    // Clicks: open (record recent) and pin
+    // Clicks: pin, and block opening when offline
     $('tools').addEventListener('click', e => {
       const pinBtn = e.target.closest('[data-pin]');
       if (pinBtn) {
@@ -677,14 +676,7 @@
         return;
       }
       const link = e.target.closest('[data-open]');
-      if (link) {
-        const id = link.dataset.open;
-        state.recent = [{ id, t: Date.now() }, ...state.recent.filter(r => r.id !== id)].slice(0, 6);
-        store.set('recent', state.recent);
-        if (!navigator.onLine) { e.preventDefault(); toast(T().noConn); return; }
-        // Re-render after a new-tab open so "Recent" updates; same-window opens navigate away anyway.
-        if (link.target === '_blank') setTimeout(renderTools, 300);
-      }
+      if (link && !navigator.onLine) { e.preventDefault(); toast(T().noConn); }
     });
 
     /* =====================================================================
@@ -729,7 +721,7 @@
     }));
     $('setBtn').onclick = () => { syncSeg(); $('setDlg').showModal(); };
     $('resetBtn').onclick = () => {
-      state.pins = []; state.recent = []; store.set('pins', []); store.set('recent', []);
+      state.pins = []; store.set('pins', []);
       renderTools(); toast(T().cleared);
     };
 
