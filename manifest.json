@@ -37,15 +37,15 @@
   ],
   "shortcuts": [
     {
-      "name": "Waypoint – UCM",
-      "url": "https://script.google.com/a/macros/airasia.com/s/AKfycbza5Njluz2DjiNpdJyGGIpoJM244K7fvv9zohcwNZ4b0X_VuJXATVna4SH9SngKirMN/exec"
+      "name": "UCM – Waypoint",
+      "url": "https://script.google.com/a/macros/airasia.com/s/AKfycbyTZs6aTQa3ThASeaKkOci5aBZc7sHMdeqiar2VWQQzILfVfxcEXvKFSs6rzFcsmw/exec"
     },
     {
-      "name": "ULD Sweep",
+      "name": "SCM – ULD Sweep",
       "url": "https://script.google.com/a/macros/airasia.com/s/AKfycby6dpU2PnJvibeN1HkUGAIBGO5XiZJGtRatG3XBAi3A5FrWNyhH3NdZEQ4en2hx5bCg9w/exec"
     },
     {
-      "name": "LUC Report",
+      "name": "LUC – Relay",
       "url": "https://script.google.com/a/macros/airasia.com/s/AKfycbwcUefNr38d8VYV4QeRB-neCNSP1JhKuFnCNPPD3iHDWx_AwWhMxAJuZotQpUg3gg-A/exec"
     },
     {
